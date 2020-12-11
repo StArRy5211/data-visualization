@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <canvas width="600" height="600"></canvas>
+  <script>
+    // 在画布中心绘制三角形
+    (function () {
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+      const canvasSize = {
+        width: 600,
+        height: 600,
+      }
+      const triangleSize = {
+        width: 100,
+        height: 100,
+      };
+
+      ctx.save();
+      ctx.translate(0, -0.5 * triangleSize.height);
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.moveTo(canvasSize.width / 2, canvasSize.height / 2);
+      ctx.lineTo(canvasSize.width / 2 + triangleSize.width / 2, canvasSize.height / 2 + triangleSize.height);
+      ctx.lineTo(canvasSize.width / 2 - triangleSize.width / 2, canvasSize.height / 2 + triangleSize.height);
+      ctx.fill();
+      ctx.restore();
+    })()
+  </script>
+</body>
+</html>
