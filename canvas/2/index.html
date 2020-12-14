@@ -4,9 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    canvas {
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <canvas height="1600" width="1600"></canvas>
+  <canvas height="800" width="800"></canvas>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.3.1/d3.min.js" integrity="sha512-9H86d5lhAwgf2/u29K4N5G6pZThNOojI8kMT4nT4NHvVR02cM85M06KJRQXkI0XgQWBpzQyIyr8LVomyu1AQdw==" crossorigin="anonymous"></script>
   <script>
     const dataSource = 'https://s5.ssl.qhres.com/static/b0695e2dd30daa64.json';
@@ -17,41 +22,61 @@
         .sum(d => 1)
         .sort((a, b) => b.value - a.value);
       const pack = d3.pack()
-        .size([1600, 1600])
-        .padding(3);
+        .size([800, 800])
+        .padding(2);
       const root = pack(regions);
-      console.log('root', root);
+      const TAU = 2 * Math.PI;
 
       const canvas = document.querySelector('canvas');
       const context = canvas.getContext('2d');
 
-      const TAU = 2 * Math.PI;
-      function draw(ctx, node, { fillStyle = 'rgba(0, 0, 0, 0.2)', textColor = 'white' } = {}) {
+      function draw(ctx, node, point = { x: 0, y: 0 }, { fillStyle = 'rgba(0, 0, 0, 0.2)', selectedStyle = 'rgba(255, 0, 0, 0.2)', textColor = 'white' } = {}) {
         const children = node.children;
         const {x, y, r} = node;
         ctx.fillStyle = fillStyle;
+        if (!children) {
+          const dis = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2)); // 计算鼠标到圆心的距离
+          if (dis < r) {
+            ctx.fillStyle = selectedStyle;
+          }
+        }
         ctx.beginPath();
         ctx.arc(x, y, r, 0, TAU);
         ctx.fill();
         if (children) {
           for(let i = 0; i < children.length; i++) {
-            draw(ctx, children[i]);
+            draw(ctx, children[i], point);
           }
         } else {
           const name = node.data.name;
           ctx.fillStyle = textColor;
-          ctx.font = '1.5rem Arial';
+          ctx.font = '12px Arial';
           ctx.textAlign = 'center';
           ctx.fillText(name, x, y);
         }
       }
 
-      draw(context, root);
+      function debounce(fn, interval) {
+        let timer;
+        const gapTime = interval || 1000; // 间隔时间，如果interval不传，则默认1000ms
+        return function () {
+          clearTimeout(timer);
+          const context = this;
+          const args = arguments[0]; // 保存此处的arguments，因为setTimeout是全局的，arguments无法在回调函数中获取，此处为闭包。
+          timer = setTimeout(function () {
+            fn.call(context, args); // args是事件处理函数默认事件参数event  call绑定当前page对象
+          }, gapTime);
+        };
+      };
 
-      canvas.addEventListener("mousemove", e => {
-        console.log('x: ', e.clientX);
-        console.log('y: ', e.clientY);
-      });
+      canvas.addEventListener("mousemove", debounce(e => {
+        const scrollLeft = document.body.scrollLeft + document.documentElement.scrollLeft;
+        const scrollTop = document.body.scrollTop + document.documentElement.scrollTop;
+        context.clearRect(0, 0, canvas.width, canvas.height); // 清空画布
+        draw(context, root, { x: e.clientX + scrollLeft, y: e.clientY  + scrollTop });
+      }, 50));
+
+      draw(context, root);
     })();
   </script>
 </body>
