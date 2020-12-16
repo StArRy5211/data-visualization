@@ -35,7 +35,7 @@
         const {x, y, r} = node;
         ctx.fillStyle = fillStyle;
         if (!children) {
-          const dis = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2)); // 计算鼠标到圆心的距离
+          const dis = Math.hypot(point.x - x, point.y - y); // 计算鼠标到圆心的距离
           if (dis < r) {
             ctx.fillStyle = selectedStyle;
           }
